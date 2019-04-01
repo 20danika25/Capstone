@@ -7,13 +7,17 @@
 import spgl
 
 # Create Classes
+class Paddle(spgl.Sprite):
+    def __init__(self, shape, color, x, y):
+        spgl.Sprite.__init__(self, shape, color, x, y)
 
 # Create Functions
 
 # Initial Game setup
-game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 0)
+game = spgl.Game(800, 600, "blue", "Dakinoid By Dakina", 0)
 
 # Create Sprites
+paddle = Paddle("square", "white", 0, -250)
 
 # Create Labels
 
