@@ -49,18 +49,31 @@ class Ball(spgl.Sprite):
 		
 		if self.xcor() > game.SCREEN_WIDTH / 2 - 20:
 			self.goto(game.SCREEN_WIDTH / 2 - 20, self.ycor())
-
+			self.dx * -1
 			
 		if self.xcor() < -game.SCREEN_WIDTH / 2 + 10:
 			self.goto(-game.SCREEN_WIDTH / 2 + 10, self.ycor())
-
+			self.dx * -1
 		
 		if self.ycor() > game.SCREEN_HEIGHT:
 			self.goto(self.xcor, game.SCREEN_HEIGHT)
-			self.rt(40)
+			self.dy * -1
 		
 			
+		#check for collision with the paddle
 		
+		
+class brick(spgl.Sprite):
+	def __init__(self, shape, color, x, y):
+		spgl.Sprite.__init__(self, shape, color, x, y)
+		
+		
+		#check for collision with ball. if there is a collision, 
+		#move the brick sprite off of the screen
+		
+class powerup(spgl.Sprite):
+	def __init__(self, shape, color, x, y):
+		spgl.Sprite.__init__(self, shape, color, x, y)
 		
 # Create Functions
 
