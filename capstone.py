@@ -9,25 +9,24 @@ import random
 
 # Create Classes
 class Paddle(spgl.Sprite):
-	def __init__(self, shape, color, x, y):
-		spgl.Sprite.__init__(self, shape, color, x, y)
+	def __init__(self, shape, color, x, y, width, height):
+		super().__init__(shape, color, x, y, width, height)
 		self.speed = 0
-	
+
 	def tick(self):
 		self.move()
 		
 	def move(self):
 		self.fd(self.speed)
 		
-		if self.xcor() > game.SCREEN_WIDTH / 2 - 20:
-			self.goto(game.SCREEN_WIDTH / 2 - 20, self.ycor())
+		if self.xcor() + self.width / 2 > game.SCREEN_WIDTH / 2  :
+			self.goto(game.SCREEN_WIDTH /2  - self.width/2 , self.ycor())
 			self.speed = 0
-			self.setheading(0)
 			
-		if self.xcor() < -game.SCREEN_WIDTH / 2 + 10:
-			self.goto(-game.SCREEN_WIDTH / 2 + 10, self.ycor())
+		if self.xcor() - self.width /2 < -game.SCREEN_WIDTH / 2 :
+			self.goto(-game.SCREEN_WIDTH / 2  + self.width/2, self.ycor())
 			self.speed = 0
-			self.setheading(180)
+
 			
 	def move_right(self):
 		self.setheading(0)
@@ -110,20 +109,20 @@ bricks = []
 #define the first level
 level_1 = [
 "                                           ",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
-"X                                         X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
+"X                                          X",
 "                                           ",
 ]
 # append level 1 to levels
@@ -134,7 +133,7 @@ def draw_level(level):
 	for y in range(len(level)):
 		for x in range(len(level[y])):
 			if level[y][x] == "X":
-				screen_x = -300 + (x * 16)
+				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 			
 				brick = Brick("square", "white", screen_x, screen_y)
@@ -148,9 +147,8 @@ game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 0)
 draw_level(level_1)
 
 # Create Sprites
-paddle = Paddle("square", "white", 0, -250)
-paddle.width = 100
-paddle.height = 20
+paddle = Paddle("square", "white", 0, -250, 100, 20)
+
 paddle.shapesize(stretch_wid=1, stretch_len=5, outline=None)
 ball = Ball("circle", "skyblue", 0, -229)
 ball.width = 20
@@ -162,6 +160,8 @@ ball.height = 20
 # Create Buttons
 
 # Set Keyboard Bindings
+
+# talk to Mr.Thompson about onkey release
 game.set_keyboard_binding(spgl.KEY_LEFT, paddle.move_left)
 game.set_keyboard_binding(spgl.KEY_RIGHT, paddle.move_right)
 game.set_keyboard_binding(spgl.KEY_SPACE, ball.start_moving)
