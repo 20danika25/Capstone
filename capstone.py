@@ -7,6 +7,9 @@
 import spgl
 import random
 
+#specify lives
+lives = 1
+
 # Create Classes
 class Paddle(spgl.Sprite):
 	def __init__(self, shape, color, x, y, width, height):
@@ -37,13 +40,15 @@ class Paddle(spgl.Sprite):
 		self.setheading(180)
 		self.speed = 10
 		
+	def set_width(self, width):
+		self.width = width
+		
 
 class Ball(spgl.Sprite):
 	def __init__(self, shape, color, x, y):
 		spgl.Sprite.__init__(self, shape, color, x, y)
 		self.speed = 0
 		self.dx = 0
-
 		
 	def tick(self):
 		self.move()	
@@ -66,7 +71,12 @@ class Ball(spgl.Sprite):
 			self.goto(0,-229)
 			self.dy = 0
 			self.dx = 0
-
+			global lives
+			lives -= 1
+			
+		if abs(ball.dx) < 1:
+			ball.dx *= 1.001
+			ball.dy *= 1.001			
 
 		
 	def start_moving(self):
@@ -87,10 +97,11 @@ class Brick(spgl.Sprite):
 
 		
 class Powerup(Brick):
-	def __init__(self, shape, color, x, y):
-		spgl.Sprite.__init__(self, shape, color, x, y)
-		Brick.__init__(self,shape,color,x, y)
+	def __init__(self, shape, color, x, y, type):
+		Brick.__init__(self, shape, color, x, y)
+		self.type = type
 		
+		# power ups: player, slow, enlarge, catch, disruption
 		
 class Pen(spgl.Sprite): # for the actual bricks
 	def __init__(self):
@@ -100,11 +111,21 @@ class Pen(spgl.Sprite): # for the actual bricks
 		self.penup()
 		self.speed(0)
 		
+class FallingPill(spgl.Sprite):
+	def __init__(self, shape, color, x, y):
+		spgl.Sprite__init__(self, shape color, x, y)
+		self.speed(0)
+		self.dx = 3
+		self.dy = 3
+		
 # create a list of levels
 levels = [""]
 
 # create a list of bricks
 bricks = []
+
+#create a list of power-ups
+powerups = []
 
 #define the first level
 level_1 = [
@@ -117,7 +138,7 @@ level_1 = [
 "X                                          X",
 "X                                          X",
 "X                                          X",
-"X                                          X",
+"X                                          e",
 "X                                          X",
 "X                                          X",
 "X                                          X",
@@ -125,6 +146,8 @@ level_1 = [
 "X                                          X",
 "                                           ",
 ]
+
+
 # append level 1 to levels
 levels.append(level_1)
 # Create Functions
@@ -138,6 +161,28 @@ def draw_level(level):
 			
 				brick = Brick("square", "white", screen_x, screen_y)
 				bricks.append(brick)
+			
+			elif level[y][x] == "p":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
+				
+				oneup = Powerup("square", "blue", screen_x, screen_y, "player")
+				powerups.append(oneup)
+				
+			elif level[y][x] == "s":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
+				
+				slow = Powerup("square", "red", screen_x, screen_y, "slow")
+				powerups.append(slow)
+				
+			elif level[y][x] == "e":
+				screen_x = -350 + (x * 16)
+				screen_yy = 300 - (y * 30)
+				
+				enlarge = Powerup("square", "green", screen_x, screen_y, "enlarge")
+				powerups.append(enlarge)
+				
 
 
 
@@ -148,7 +193,8 @@ draw_level(level_1)
 
 # Create Sprites
 paddle = Paddle("square", "white", 0, -250, 100, 20)
-
+paddle.width = 100
+paddle.height = 20
 paddle.shapesize(stretch_wid=1, stretch_len=5, outline=None)
 ball = Ball("circle", "skyblue", 0, -229)
 ball.width = 20
@@ -157,18 +203,20 @@ ball.height = 20
 
 # Create Labels
 
+
 # Create Buttons
 
 # Set Keyboard Bindings
 
-# talk to Mr.Thompson about onkey release
+# talk to Mr.Thompson about on key release
 game.set_keyboard_binding(spgl.KEY_LEFT, paddle.move_left)
 game.set_keyboard_binding(spgl.KEY_RIGHT, paddle.move_right)
 game.set_keyboard_binding(spgl.KEY_SPACE, ball.start_moving)
 while True:
 	# Call the game tick method
 	game.tick()
-
+	
+	
 	# check for collision between ball and paddle
 	if game.is_collision(paddle, ball):
 		ball.dy *= -1
@@ -179,5 +227,37 @@ while True:
 			print("hit")
 			ball.dy *= -1
 			brick.destroy()
+			
+			
+	
+	for powerup in powerups:
+		if game.is_collision(powerup, ball):
+			ball.dy *= -1
+			powerup.destroy()
+			
+			# Check type
+			if powerup.type == "player":
+				lives += 1
+				print(lives)
+				
+			if powerup.type == "slow":
+				ball.dx *= 0.9
+				ball.dy *= 0.9
+				
+			if powerup.type == "enlarge":
+				paddle.width = 150
+				paddle.shapesize(stretch_wid=1, stretch_len=7.5, outline=None)
+				
+
+
+			
+
+
+
+
+		
+	# lives
+	if lives == 0:
+		game.exit()
     
 
