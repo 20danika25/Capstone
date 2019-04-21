@@ -8,7 +8,7 @@ import spgl
 import random
 
 #specify lives
-lives = 1
+lives = 3
 
 # Create Classes
 class Paddle(spgl.Sprite):
@@ -33,12 +33,18 @@ class Paddle(spgl.Sprite):
 			
 	def move_right(self):
 		self.setheading(0)
-		self.speed = 10
-	
+		self.speed = 15
+		
+	def stop_move_right(self):
+		self.speed = 0
+		
 	
 	def move_left(self):
 		self.setheading(180)
-		self.speed = 10
+		self.speed = 14
+		
+	def stop_move_left(self):
+		self.speed = 0
 		
 	def set_width(self, width):
 		self.width = width
@@ -113,7 +119,7 @@ class Pen(spgl.Sprite): # for the actual bricks
 		
 class FallingPill(spgl.Sprite):
 	def __init__(self, shape, color, x, y):
-		spgl.Sprite__init__(self, shape color, x, y)
+		spgl.Sprite__init__(self, shape, color, x, y)
 		self.speed(0)
 		self.dx = 3
 		self.dy = 3
@@ -129,22 +135,22 @@ powerups = []
 
 #define the first level
 level_1 = [
-"                                           ",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          e",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"X                                          X",
-"                                           ",
+"                                            ",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           e",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X                                           X",
+"X   X   X   X   X   X   X   X   X   X   X   X",
+"                                            ",
 ]
 
 
@@ -209,9 +215,11 @@ ball.height = 20
 # Set Keyboard Bindings
 
 # talk to Mr.Thompson about on key release
-game.set_keyboard_binding(spgl.KEY_LEFT, paddle.move_left)
-game.set_keyboard_binding(spgl.KEY_RIGHT, paddle.move_right)
-game.set_keyboard_binding(spgl.KEY_SPACE, ball.start_moving)
+game.set_keyboard_down_binding(spgl.KEY_LEFT, paddle.move_left)
+game.set_keyboard_up_binding(spgl.KEY_LEFT, paddle.stop_move_left)
+game.set_keyboard_down_binding(spgl.KEY_RIGHT, paddle.move_right)
+game.set_keyboard_up_binding(spgl.KEY_RIGHT, paddle.stop_move_right)
+game.set_keyboard_down_binding(spgl.KEY_SPACE, ball.start_moving)
 while True:
 	# Call the game tick method
 	game.tick()
@@ -249,13 +257,6 @@ while True:
 				paddle.shapesize(stretch_wid=1, stretch_len=7.5, outline=None)
 				
 
-
-			
-
-
-
-
-		
 	# lives
 	if lives == 0:
 		game.exit()
