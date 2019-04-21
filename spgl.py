@@ -242,7 +242,7 @@ class Game(object):
         turtle.title(title)
         self.title = title
 
-    def set_keyboard_binding(self, key, function):
+    def set_keyboard_down_binding(self, key, function):
         # Allow any order of arguments as this is reversed from Tkinter
         # Check if key is a string. If not, reverse the arguments
         if type(key) is not str:
@@ -256,6 +256,21 @@ class Game(object):
         # Python 2
         except:
             turtle.onkey(function, key)
+
+    def set_keyboard_up_binding(self, key, function):
+        # Allow any order of arguments as this is reversed from Tkinter
+        # Check if key is a string. If not, reverse the arguments
+        if type(key) is not str:
+            temp = key
+            key = function
+            function = temp
+
+        # Python 3
+        try:
+            turtle.onkeyrelease(function, key)
+        # Python 2
+        except:
+        	pass
 
     def update_screen(self):
         while time.time() < self.time + (1.0 / self.FPS):
