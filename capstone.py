@@ -33,7 +33,7 @@ class Paddle(spgl.Sprite):
 			
 	def move_right(self):
 		self.setheading(0)
-		self.speed = 15
+		self.speed = 17
 		
 	def stop_move_right(self):
 		self.speed = 0
@@ -41,7 +41,7 @@ class Paddle(spgl.Sprite):
 	
 	def move_left(self):
 		self.setheading(180)
-		self.speed = 14
+		self.speed = 17
 		
 	def stop_move_left(self):
 		self.speed = 0
@@ -60,6 +60,9 @@ class Ball(spgl.Sprite):
 		self.move()	
 		
 	def move(self):
+		if self.dx == 0 and self.dy == 0:
+			ball.setx(paddle.xcor())
+			ball.sety(paddle.ycor() + paddle.height)
 		self.goto(self.xcor() + self.dx, self.ycor() + self.dy)
 		
 		if self.xcor() > game.SCREEN_WIDTH / 2 - 20:
@@ -90,7 +93,7 @@ class Ball(spgl.Sprite):
 		self.dy = 5
 		self.heading = random.randint(50,130)
 			
-	
+
 		
 class Brick(spgl.Sprite):
 	def __init__(self, shape, color, x, y):
@@ -107,7 +110,13 @@ class Powerup(Brick):
 		Brick.__init__(self, shape, color, x, y)
 		self.type = type
 		
-		# power ups: player, slow, enlarge, catch, disruption
+class Double_Break_Brick(Brick):
+	def __init__(self, shape, color, x, y):
+		Brick.__init__(self, shape, color, x, y)
+		self.collisions = 0
+		
+		
+		# power ups: player/, slow/, enlarge/, catch, disruption
 		
 class Pen(spgl.Sprite): # for the actual bricks
 	def __init__(self):
@@ -133,24 +142,30 @@ bricks = []
 #create a list of power-ups
 powerups = []
 
+#create a list of double_break bricks
+double_bricks = []
+
+#create a list of falling pills
+falling_pills = []
+
 #define the first level
 level_1 = [
 "                                            ",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           e",
-"X                                           X",
-"X                                           X",
-"X                                           X",
-"X                                           X",
+"                                             ",
+"                                             ",
+"                                             ",
+"                                             ",
+"                                             ",
+"                                             ",
+"                                             ",
+"                      d                      ",
+"                    d   d                    ",
+"                d   d   d   d                ",
+"            d   X   X   d   X   X            ",
+"        X   X   X   X   X   X   X   X        ",
+"    X   X   X   X   X   X   X   X   X   X    ",
 "X   X   X   X   X   X   X   X   X   X   X   X",
-"                                            ",
+"                                             ",
 ]
 
 
@@ -165,7 +180,7 @@ def draw_level(level):
 				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 			
-				brick = Brick("square", "white", screen_x, screen_y)
+				brick = Brick("square", "blue", screen_x, screen_y)
 				bricks.append(brick)
 			
 			elif level[y][x] == "p":
@@ -179,17 +194,22 @@ def draw_level(level):
 				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 				
-				slow = Powerup("square", "red", screen_x, screen_y, "slow")
+				slow = Powerup("square", "blue", screen_x, screen_y, "slow")
 				powerups.append(slow)
 				
 			elif level[y][x] == "e":
 				screen_x = -350 + (x * 16)
-				screen_yy = 300 - (y * 30)
+				screen_y = 300 - (y * 30)
 				
 				enlarge = Powerup("square", "green", screen_x, screen_y, "enlarge")
 				powerups.append(enlarge)
 				
-
+			elif level[y][x] == "d":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
+				
+				double_brick = Double_Break_Brick("square", "white", screen_x, screen_y)
+				double_bricks.append(double_brick)
 
 
 # Initial Game setup
@@ -228,15 +248,60 @@ while True:
 	# check for collision between ball and paddle
 	if game.is_collision(paddle, ball):
 		ball.dy *= -1
+		
+		if ball.xcor() <= paddle.xcor() + 20 and ball.xcor() >= paddle.xcor() - 20:
+			ball.dy *= -1
+					
+		elif ball.xcor() > paddle.xcor() + 20:
+			ball.dy *= 0.9
+			ball.dx *= 1.1
+				
+		elif ball.xcor() < paddle.xcor() -20:
+			ball.dx *= 1.1
+			ball.dy *= 0.9
     	
-	# check for collision between ball and brick
+	# check for horizontal collision between ball and brick
 	for brick in bricks:
 		if game.is_collision(brick, ball):
-			print("hit")
+			if ball.xcor() > brick.xcor() - brick.width /2 and ball.xcor() < brick.xcor() + brick.width / 2 and ball.ycor() < brick.ycor() - 10:
+				print("COLLISION BELOW")
+				ball.dy *= -1
+				brick.destroy()
+				ball.tick()
+				
+			elif ball.xcor() > brick.xcor() - brick.width /2 and ball.xcor() < brick.xcor() + brick.width / 2 and ball.ycor() > brick.ycor() + 10:
+				print("COLLISION ABOVE")
+				 
+				ball.dy *= -1
+				brick.destroy()
+				ball.tick()
+				
+			elif ball.xcor() < brick.xcor() - brick.width / 2:
+				print("LEFT COLLISION")
+				ball.dx *= -1
+				brick.destroy()
+				ball.tick()
+				
+			elif ball.xcor() > brick.xcor() + brick.width/2:
+				print("rIGHT COLLISION")
+				ball.dx *= -1
+				brick.destroy()
+				ball.tick()
+				
+
+			
+	# check for collision between ball and double_brick
+	for double_brick in double_bricks:
+		if game.is_collision(double_brick, ball):
 			ball.dy *= -1
-			brick.destroy()
+			ball.tick()
+			double_brick.collisions += 1
+			double_brick.color("pink")
 			
-			
+			if double_brick.collisions == 2:
+				double_brick.destroy()
+				
+	#check for power up block collisions 
 	
 	for powerup in powerups:
 		if game.is_collision(powerup, ball):
