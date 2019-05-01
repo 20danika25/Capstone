@@ -6,6 +6,9 @@
 # Import SPGL
 import spgl
 import random
+import os
+
+#bg pic
 
 #specify lives
 lives = 3
@@ -16,6 +19,9 @@ class Paddle(spgl.Sprite):
 		super().__init__(shape, color, x, y, width, height)
 		self.speed = 0
 		self.set_image("paddle.gif", 100, 20)
+		self.enlarged_counter = 0
+		self.catch_counter = 0 #I made two counters because I was scared I might break something
+		
 		
 	def tick(self):
 		self.move()
@@ -84,6 +90,7 @@ class Ball(spgl.Sprite):
 			self.dx = 0
 			global lives
 			lives -= 1
+			print("lives = {}".format(lives))
 			
 		if abs(ball.dx) < 1:
 			ball.dx *= 1.001
@@ -106,29 +113,26 @@ class Brick(spgl.Sprite):
 		self.dx = 0
 		self.shapesize(stretch_wid=1, stretch_len=2.5, outline=None)
 		
+		
 	def check_collision(self, ball):
 		self.reflect(ball)
 		self.destroy()
+		os.system("afplay blip.mp3&")
 			
 	def reflect(self, ball):
 		if ball.xcor() > self.xcor() - self.width /2 and ball.xcor() < self.xcor() + self.width / 2 and ball.ycor() < self.ycor() - 10:
-			print("COLLISION BELOW")
 			ball.dy *= -1
 			ball.tick()
 		
 		elif ball.xcor() > self.xcor() - self.width /2 and ball.xcor() < self.xcor() + self.width / 2 and ball.ycor() > self.ycor() + 10:
-			print("COLLISION ABOVE")
-		 
 			ball.dy *= -1
 			ball.tick()
 		
 		elif ball.xcor() < self.xcor() - self.width / 2:
-			print("LEFT COLLISION")
 			ball.dx *= -1
 			ball.tick()
 		
 		elif ball.xcor() > self.xcor() + self.width/2:
-			print("rIGHT COLLISION")
 			ball.dx *= -1
 			ball.tick()
 			
@@ -137,21 +141,74 @@ class Powerup(Brick):
 	def __init__(self, shape, color, x, y, type):
 		Brick.__init__(self, shape, color, x, y)
 		self.type = type
-		print("power")
+		
+	def move(self):
+		if self.dx == 0 and self.dy == 0:
+			return
+			
+		self.goto(self.xcor() + self.dx, self.ycor() + self.dy)
+		
+		if self.ycor() < -game.SCREEN_HEIGHT / 2 + 20:
+			self.destroy()
+		
 		
 		
 	def check_collision(self, ball):
-		self.reflect(ball)
-		self.dy += -3
-		print("collision")
 		self.move()
-		
+		self.reflect(ball)
+		self.dy = -3
+		os.system("afplay blip.mp3&")
+
+	def paddle_collision(self, paddle, ball):
+		self.destroy()
+		os.system("afplay beep.mp3&")
+		if self.type == "player":
+				global lives
+				lives += 1
+				print(lives)
+				
+		elif self.type == "slow":
+			ball.dx *= 0.8
+			ball.dy *= 0.8
+				
+		elif self.type == "enlarge":
+			paddle.enlarged_counter = 5
+			paddle.set_image("enlarged_paddle.gif", 150, 20)
+			paddle.width = 160
+			paddle.shapesize(stretch_wid=1, stretch_len=7.5, outline=None)
+			
+		elif self.type == "catch":
+			paddle.catch_counter = 5
+
+			
+
 
 class Double_Break_Brick(Brick):
 	def __init__(self, shape, color, x, y):
 		Brick.__init__(self, shape, color, x, y)
 		self.collisions = 0
 		
+	def check_collision(self, ball):
+		self.reflect(ball)
+		os.system("afplay blip.mp3&")
+			
+	def reflect(self, ball):
+		if ball.xcor() > self.xcor() - self.width /2 and ball.xcor() < self.xcor() + self.width / 2 and ball.ycor() < self.ycor() - 10:
+			print("COLLISION BELOW")
+			ball.dy *= -1
+			ball.tick()
+		
+		elif ball.xcor() > self.xcor() - self.width /2 and ball.xcor() < self.xcor() + self.width / 2 and ball.ycor() > self.ycor() + 10:
+			ball.dy *= -1
+			ball.tick()
+		
+		elif ball.xcor() < self.xcor() - self.width / 2:
+			ball.dx *= -1
+			ball.tick()
+		
+		elif ball.xcor() > self.xcor() + self.width/2:
+			ball.dx *= -1
+			ball.tick()
 		# power ups: player/, slow/, enlarge/, catch, disruption
 		
 class Pen(spgl.Sprite): # for the actual bricks
@@ -179,21 +236,21 @@ double_bricks = []
 
 #define the first level
 level_1 = [
-"                                            ",
-"       X                                     ",
-"   X   X   X                                 ",
-"       X                                     ",
+"                                             ",
+"d   d   d   d   d   d   d   d   d   d   d   d",
+"    r   Y   g   B           r   y   G   b    ",
+"    B   r   y   g           b   r   y   g    ",
+"    g   b   r   y           g   b   r   y    ",
+"    y   g   b   r           Y   g   b   r    ",
+"    r   y   G   b           r   y   g   b    ",
+"    B   r   y   g           B   r   Y   g    ",
+"    g   b   r   y           g   b   r   y    ",
+"    y   G   b   r           Y   G   b   r    ",
+"    r   y   g   B           R   R   R   R    ",
 "                                             ",
 "                                             ",
 "                                             ",
 "                                             ",
-"                      d                      ",
-"                    d   d                    ",
-"                d   d   d   d                ",
-"            d   X   X   d   X   X            ",
-"        X   X   X   X   X   X   X   X        ",
-"    X   X   X   X   X   X   X   X   X   X    ",
-"X   X   X   X   X   p   p   p   p   p   p   p",
 "                                             ",
 ]
 
@@ -205,32 +262,61 @@ levels.append(level_1)
 def draw_level(level):
 	for y in range(len(level)):
 		for x in range(len(level[y])):
-			if level[y][x] == "X":
+			if level[y][x] == "r":
 				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 			
-				brick = Brick("square", "blue", screen_x, screen_y)
-				bricks.append(brick)
+				redbrick = Brick("square", "indianred", screen_x, screen_y)
+				bricks.append(redbrick)
+				
+			elif level[y][x] == "y":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
 			
-			elif level[y][x] == "p":
+				yellowbrick = Brick("square", "gold", screen_x, screen_y)
+				bricks.append(yellowbrick)
+				
+			elif level[y][x] == "g":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
+			
+				greenbrick = Brick("square", "palegreen", screen_x, screen_y)
+				bricks.append(greenbrick)
+				
+			elif level[y][x] == "b":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
+			
+				bluebrick = Brick("square", "royalblue", screen_x, screen_y)
+				bricks.append(bluebrick)
+				
+			elif level[y][x] == "R":
 				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 				
-				oneup = Powerup("square", "blue", screen_x, screen_y, "player")
+				catch = Powerup("square", "indianred", screen_x, screen_y, "catch")
+				powerups.append(catch)
+
+			
+			elif level[y][x] == "Y":
+				screen_x = -350 + (x * 16)
+				screen_y = 300 - (y * 30)
+				
+				oneup = Powerup("square", "gold", screen_x, screen_y, "player")
 				powerups.append(oneup)
 				
-			elif level[y][x] == "s":
+			elif level[y][x] == "G":
 				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 				
-				slow = Powerup("square", "blue", screen_x, screen_y, "slow")
+				slow = Powerup("square", "palegreen", screen_x, screen_y, "slow")
 				powerups.append(slow)
 				
-			elif level[y][x] == "e":
+			elif level[y][x] == "B":
 				screen_x = -350 + (x * 16)
 				screen_y = 300 - (y * 30)
 				
-				enlarge = Powerup("square", "green", screen_x, screen_y, "enlarge")
+				enlarge = Powerup("square", "royalblue", screen_x, screen_y, "enlarge")
 				powerups.append(enlarge)
 				
 			elif level[y][x] == "d":
@@ -240,21 +326,15 @@ def draw_level(level):
 				double_brick = Double_Break_Brick("square", "white", screen_x, screen_y)
 				double_bricks.append(double_brick)
 
-			elif level[y][x] == "catch":
-				screen_x = -350 + (x*16)
-				screen_y = 300 - (y*30)
-				
-				catch = Powerup("sqare", "yellow", screen_x, screen_y, "catch")
-				powerups.append(catch)
 
 # Initial Game setup
-game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 0)
+game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 3)
 
 draw_level(level_1)
 
 # Create Sprites
 paddle = Paddle("square", "white", 0, -250, 100, 20)
-paddle.width = 100
+paddle.width = 120
 paddle.height = 20
 paddle.shapesize(stretch_wid=1, stretch_len=5, outline=None)
 ball = Ball("circle", "skyblue", 0, -229)
@@ -263,7 +343,7 @@ ball.height = 20
 
 
 # Create Labels
-
+print("lives = {}".format(lives))
 
 # Create Buttons
 
@@ -276,13 +356,33 @@ game.set_keyboard_down_binding(spgl.KEY_RIGHT, paddle.move_right)
 game.set_keyboard_up_binding(spgl.KEY_RIGHT, paddle.stop_move_right)
 game.set_keyboard_down_binding(spgl.KEY_SPACE, ball.start_moving)
 while True:
+
 	# Call the game tick method
 	game.tick()
-	
+	#backgound
+	game.set_background("background.gif")
 	
 	# check for collision between ball and paddle
 	if game.is_collision(paddle, ball):
 		ball.dy *= -1
+		if paddle.enlarged_counter > 0:
+			paddle.enlarged_counter -= 1
+			if paddle.enlarged_counter == 0:
+				paddle.width = 100
+				paddle.set_image("paddle.gif", 100, 20)
+				
+		# paddle catch powerup
+		
+		if paddle.catch_counter > 0:
+			paddle.catch_counter -= 1
+			if game.is_collision(paddle, ball):
+				ball.setx(paddle.xcor())
+				ball.sety(paddle.ycor() + paddle.height)
+				ball.dy = 0
+				ball.dx = 0
+
+				
+				
 		
 		#if ball.xcor() <= paddle.xcor() + 20 and ball.xcor() >= paddle.xcor() - 20:
 			#ball.dy *= -1
@@ -316,30 +416,16 @@ while True:
 	#check for power up block collisions 
 	
 	for powerup in powerups:
+		powerup.move()
+		if game.is_collision(powerup, paddle):
+			powerup.paddle_collision(paddle, ball)
 		if game.is_collision(powerup, ball):
 			powerup.check_collision(ball)
 
-			
-			
-			# Check type
-			if powerup.type == "player":
-				lives += 1
-				print(lives)
 				
-			if powerup.type == "slow":
-				ball.dx *= 0.9
-				ball.dy *= 0.9
-				
-			if powerup.type == "enlarge":
-				paddle.width = 150
-				paddle.shapesize(stretch_wid=1, stretch_len=7.5, outline=None)
-				
-			if powerup.type == "catch":
-				pass
-				
-
 	# lives
 	if lives == 0:
+		print("Game Over!")
 		game.exit()
     
 
