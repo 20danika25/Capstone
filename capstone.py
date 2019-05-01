@@ -15,7 +15,8 @@ class Paddle(spgl.Sprite):
 	def __init__(self, shape, color, x, y, width, height):
 		super().__init__(shape, color, x, y, width, height)
 		self.speed = 0
-
+		# self.setimage()
+		
 	def tick(self):
 		self.move()
 		
@@ -110,6 +111,8 @@ class Powerup(Brick):
 		Brick.__init__(self, shape, color, x, y)
 		self.type = type
 		
+	
+
 class Double_Break_Brick(Brick):
 	def __init__(self, shape, color, x, y):
 		Brick.__init__(self, shape, color, x, y)
@@ -130,8 +133,14 @@ class FallingPill(spgl.Sprite):
 	def __init__(self, shape, color, x, y):
 		spgl.Sprite__init__(self, shape, color, x, y)
 		self.speed(0)
-		self.dx = 3
+		self.dx = 0
 		self.dy = 3
+		
+		
+	def move(self):	
+		if self.ycor() < -game.SCREEN_HEIGHT / 2 + 20: 
+			self.destroy()
+		
 		
 # create a list of levels
 levels = [""]
@@ -145,15 +154,14 @@ powerups = []
 #create a list of double_break bricks
 double_bricks = []
 
-#create a list of falling pills
-falling_pills = []
+
 
 #define the first level
 level_1 = [
 "                                            ",
-"                                             ",
-"                                             ",
-"                                             ",
+"       X                                     ",
+"   X   X   X                                 ",
+"       X                                     ",
 "                                             ",
 "                                             ",
 "                                             ",
@@ -213,7 +221,7 @@ def draw_level(level):
 
 
 # Initial Game setup
-game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 0)
+game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 3)
 
 draw_level(level_1)
 
@@ -249,16 +257,16 @@ while True:
 	if game.is_collision(paddle, ball):
 		ball.dy *= -1
 		
-		if ball.xcor() <= paddle.xcor() + 20 and ball.xcor() >= paddle.xcor() - 20:
-			ball.dy *= -1
+		#if ball.xcor() <= paddle.xcor() + 20 and ball.xcor() >= paddle.xcor() - 20:
+			#ball.dy *= -1
 					
-		elif ball.xcor() > paddle.xcor() + 20:
-			ball.dy *= 0.9
-			ball.dx *= 1.1
+		#elif ball.xcor() > paddle.xcor() + 20:
+			#ball.dy *= 0.9
+			#ball.dx *= 1.1
 				
-		elif ball.xcor() < paddle.xcor() -20:
-			ball.dx *= 1.1
-			ball.dy *= 0.9
+		#elif ball.xcor() < paddle.xcor() -20:
+		#	ball.dx *= 1.1
+			#ball.dy *= 0.9
     	
 	# check for horizontal collision between ball and brick
 	for brick in bricks:
