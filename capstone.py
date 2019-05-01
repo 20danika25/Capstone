@@ -103,35 +103,35 @@ class Brick(spgl.Sprite):
 		self.speed = 0
 		self.width = 50
 		self.height = 20
+		self.dx = 0
 		self.shapesize(stretch_wid=1, stretch_len=2.5, outline=None)
 		
 	def check_collision(self, ball):
+		self.reflect(ball)
+		self.destroy()
+			
+	def reflect(self, ball):
 		if ball.xcor() > self.xcor() - self.width /2 and ball.xcor() < self.xcor() + self.width / 2 and ball.ycor() < self.ycor() - 10:
 			print("COLLISION BELOW")
 			ball.dy *= -1
-			self.destroy()
 			ball.tick()
 		
 		elif ball.xcor() > self.xcor() - self.width /2 and ball.xcor() < self.xcor() + self.width / 2 and ball.ycor() > self.ycor() + 10:
 			print("COLLISION ABOVE")
 		 
 			ball.dy *= -1
-			self.destroy()
 			ball.tick()
 		
 		elif ball.xcor() < self.xcor() - self.width / 2:
 			print("LEFT COLLISION")
 			ball.dx *= -1
-			self.destroy()
 			ball.tick()
 		
 		elif ball.xcor() > self.xcor() + self.width/2:
 			print("rIGHT COLLISION")
 			ball.dx *= -1
-			self.destroy()
 			ball.tick()
 			
-		print(type(self))
 		
 class Powerup(Brick):
 	def __init__(self, shape, color, x, y, type):
@@ -139,10 +139,12 @@ class Powerup(Brick):
 		self.type = type
 		print("power")
 		
+		
 	def check_collision(self, ball):
-		self.dy = 3
-		self.speed = 3
+		self.reflect(ball)
+		self.dy += -3
 		print("collision")
+		self.move()
 		
 
 class Double_Break_Brick(Brick):
@@ -246,7 +248,7 @@ def draw_level(level):
 				powerups.append(catch)
 
 # Initial Game setup
-game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 3)
+game = spgl.Game(800, 600, "black", "Dakinoid By Dakina", 0)
 
 draw_level(level_1)
 
@@ -315,8 +317,8 @@ while True:
 	
 	for powerup in powerups:
 		if game.is_collision(powerup, ball):
-			ball.dy *= -1
-			powerup.destroy()
+			powerup.check_collision(ball)
+
 			
 			
 			# Check type
